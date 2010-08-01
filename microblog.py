@@ -518,6 +518,8 @@ a ~/.microblogrc file:
     apiroot = twitter
     # Specify a default for the --encoding option.
     encoding = UTF-8
+    # Always use the --unseen option.
+    unseen = True
 
     [identica]
     username = seanh
