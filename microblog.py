@@ -387,8 +387,9 @@ def search(args):
             _save_lastid(lastid)
 
 def lsfeatured(args):
-    # GetFeatuered seems to always raise an HTTP Error 404,
-    # disable this command for now.
+    # GetFeatured seems to always raise an HTTP Error 404,
+    # maybe the status.net API doesn't support it?
+    # Disable this command for now.
     raise NotImplementedError()
     if args: sys.exit("lsfeatured doesn't take any arguments.")
     authenticate()
