@@ -32,7 +32,6 @@ import inspect
 IDENTICA_API_ROOT = 'http://identi.ca/api'
 TWITTER_API_ROOT = 'http://api.twitter.com/'
 
-SAVEID = None
 UNSEEN = None
 USERNAME = None
 PASSWORD = None
@@ -163,7 +162,7 @@ def lspublic(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def lspersonal(args):
@@ -186,7 +185,7 @@ def lspersonal(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def lsprofile(args):
@@ -209,7 +208,7 @@ def lsprofile(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def lsreplies(args):
@@ -228,7 +227,7 @@ def lsreplies(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def send(args):
@@ -332,7 +331,7 @@ def lsmentions(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def search(args):
@@ -352,7 +351,7 @@ def search(args):
     else:
         print_statuses(statuses)
         lastid = str(statuses[0].id)
-        if SAVEID:
+        if UNSEEN:
             _save_lastid(lastid)
 
 def lsfeatured(args):
@@ -470,7 +469,7 @@ lsfeatured),
 lsusers))
 
 def main():
-    global SAVEID, UNSEEN, USERNAME, PASSWORD, APIROOT, ENCODING, API, SHELF
+    global UNSEEN, USERNAME, PASSWORD, APIROOT, ENCODING, API, SHELF
 
     # Parse the command-line options and arguments.
     usage = """Usage: %prog [options] command [args]
@@ -502,15 +501,14 @@ a ~/.microblogrc file:
     password = *****
 """
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('-s','--saveid',action='store_true',help='remember the items that you have seen so that you can filter them out in future commands using -u')
-    parser.add_option('-u','--unseen',action='store_true',help='show only items that you have not seen before')
+    parser.add_option('-u','--unseen',action='store_true',help="remember which messages have been printed and only print messages that you haven't seen before")
     parser.add_option('-U','--username',action='store',help="specify an alternate username (overrides any username in the config file)")
     parser.add_option('-p','--password',action='store',help="specify an alternate password (overrides any password in the config file)")
     parser.add_option('-a','--apiroot',action='store',help="specify an alternate API root (overrides any apiroot in the config file)")
     parser.add_option('-e','--encoding',action='store',help="specify the character set encoding used in input strings, e.g. utf-8 (overrides any encoding in the config file)")
     parser.add_option('-c','--config',action='store',help="specify an alternate config file")
     parser.add_option('-d','--debug',action='store_true',help='enable verbose output for debugging')
-    parser.set_defaults(saveid=False, unseen=False, username=None, password=None, apiroot=None, encoding=None, config='~/.microblogrc', debug=False)
+    parser.set_defaults(unseen=False, username=None, password=None, apiroot=None, encoding=None, config='~/.microblogrc', debug=False)
     (options,args) = parser.parse_args()
 
     if not args:
@@ -518,7 +516,6 @@ a ~/.microblogrc file:
         parser.print_help()
         sys.exit(2)
 
-    SAVEID = options.saveid
     UNSEEN = options.unseen
 
     # Parse the config file.
