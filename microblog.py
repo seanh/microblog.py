@@ -3,9 +3,6 @@
 
 TODO:
 
-lsusers should use a regex to detect email addresses and call
-API.GetUserByEmail.
-
 Implement these options:
 --no-colour
 --no-bold
@@ -13,7 +10,7 @@ Implement these options:
 
 Finish implementing the commands that currently raise NotImplementedError.
 
-Add some error handling.
+Add more error handling.
 
 """
 from python_twitter import twitter
@@ -394,7 +391,16 @@ def lsusers(args):
     if not args: sys.exit("lsusers requires an argument: the usernames of the users to list.")
     users = []
     for user in args:
-        users.append(API.GetUser(user))
+        try:
+            if '@' in user[1:-1]:
+                users.append(API.GetUserByEmail(user.strip()))
+            else:
+                users.append(API.GetUser(user))
+        except urllib2.HTTPError, e:
+            if e.code == 404:
+                pass
+            else:
+                raise
     print_users(users)
 
 # The available commands, their help messages and the functions that
@@ -492,7 +498,9 @@ search),
 lsfeatured),
 
 ('lsusers <usernames>',
-"""Print the details of some users.""",
+"""Print the details of some users. For each user you can give their screen
+name, used ID or email address (a good way to search for a user name by email
+address).""",
 lsusers))
 
 def main():
