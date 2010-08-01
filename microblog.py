@@ -127,9 +127,9 @@ def print_user(user):
         print "following %s, %s followers" % (GREEN+following+END,GREEN+followers+END)
         status = user.GetStatus()
         if status:
-            print "%s statuses, latest: %s" % (statuses,YELLOW+status.text.encode('UTF-8')+END)
+            print "%s messages, latest: %s" % (statuses,YELLOW+status.text.encode('UTF-8')+END)
         else:
-            print "%s statuses" % statuses
+            print "%s messages" % statuses
     else:
         print "%s (%s) [%s %s %s]" % (BRIGHT+BLUE+screen_name+END,long_name,GREEN+statuses,followers,following+END)
 
@@ -420,7 +420,7 @@ COMMANDS = (
 None),
 
 ('lspublic [term]',
-"""List the public timeline, or list statuses from the public timeline that
+"""List the public timeline, or list messages from the public timeline that
 match a search term with lspublic <term>.""",
 lspublic),
 
@@ -480,26 +480,26 @@ follow),
 """Stop following a user.""",
 unfollow),
 
-('fav <id>',
-"""Favourite the specified status.""",
+('fav <#id>',
+"""Favourite the specified message.""",
 fav),
 
-('unfav <id>',
-"""Unfavourite the specified status.""",
+('unfav <#id>',
+"""Unfavourite the specified message.""",
 unfav),
 
 ('lsfavs [username]',
-"""List your 20 most recently favorited statuses, or list another user's
+"""List your 20 most recently favorited messages, or list another user's
 favorites with lsfavs <username>.""",
 lsfavs),
 
 ('lsmentions',
-"""List the 20 most recent mentions of your username (statuses containing
+"""List the 20 most recent mentions of your username (messages containing
 @username).""",
 lsmentions),
 
 ('search <query>',
-"""List recent statuses that match the given search query.""",
+"""List recent messages that match the given search query.""",
 search),
 
 ('lsfeatured',
