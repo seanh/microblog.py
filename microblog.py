@@ -324,9 +324,17 @@ def unfollow(args):
     print_user(following)
 
 def fav(args):
-    raise NotImplementedError()
+    if not args: sys.exit("fav requires an argument: the #ID of the message to favorite.")
+    if len(args) > 1: sys.exit("fav takes at most one argument.")
+    authenticate()
+    id = args[0].strip()
+    if id.startswith('#'): id = id[1:]
+    status = API.GetStatus(id)
+    favorite = API.CreateFavorite(status)
+    print "%s@%s just favorited message %s: %s" % (USERNAME,APIROOT,favorite.id,favorite.text.encode("UTF-8"))
 
 def unfav(args):
+    print "The status.net API doesn't support favorites/destroy yet :("
     raise NotImplementedError()
 
 def lsfavs(args):
