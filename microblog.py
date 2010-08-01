@@ -544,9 +544,6 @@ a ~/.microblogrc file:
         parser.print_help()
         sys.exit(2)
 
-    UNSEEN = options.unseen
-    LONG = options.long
-
     # Parse the config file.
     config = ConfigParser.SafeConfigParser()
     configfile = os.path.abspath(os.path.expanduser(options.config))
@@ -572,6 +569,26 @@ a ~/.microblogrc file:
     else:
         apiroot = APIROOT
     debug("apiroot = %s" % apiroot)
+
+    if options.unseen:
+        UNSEEN = options.unseen
+    elif config.has_option(APIROOT,"unseen"):
+        UNSEEN = config.getboolean(APIROOT,"unseen")
+    elif config.has_option("DEFAULT","unseen"):
+        UNSEEN = config.getboolean("DEFAULT","unseen")
+    else:
+        UNSEEN = False
+    debug("UNSEEN = %s" % UNSEEN)
+
+    if options.long:
+        LONG = options.long
+    elif config.has_option(APIROOT,"long"):
+        LONG = config.getboolean(APIROOT,"long")
+    elif config.has_option("DEFAULT","long"):
+        LONG = config.getboolean("DEFAULT","long")
+    else:
+        LONG = False
+    debug("LONG = %s" % LONG)
 
     if options.encoding:
         ENCODING = options.encoding
