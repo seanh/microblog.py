@@ -39,6 +39,7 @@ APIROOT = None
 ENCODING = None
 API = None
 SHELF = None
+LONG = None
 
 # Get height and width of user's terminal.
 HEIGHT,WIDTH = os.popen('stty size','r').read().split()
@@ -48,7 +49,25 @@ WIDTH = int(WIDTH)
 # ASCII escape sequences
 END = '\033[0m'
 BRIGHT = '\033[1m'
+FAINT = '\033[2m'
+NORMAL = '\033[22m'
+STRIKETHROUGH = '\033[9m'
+BLACK = '\033[30m'
+RED = '\033[31m'
+GREEN = '\033[32m'
+YELLOW = '\033[33m'
 BLUE = '\033[34m'
+MAGENTA = '\033[35m'
+CYAN = '\033[36m'
+WHITE = '\033[37m'
+BLACKBG = '\033[40m'
+REDBG = '\033[41m'
+GREENBG = '\033[42m'
+YELLOWBG = '\033[43m'
+BLUEBG = '\033[44m'
+MAGENTABG = '\033[45m'
+CYANBG = '\033[46m'
+WHITEBG = '\033[47m'
 
 def whoami():
     """Return the name of the calling function (string).
@@ -76,8 +95,8 @@ def print_status(status):
     name = status.user.screen_name.encode('UTF-8')
     created = status.relative_created_at.encode('UTF-8')
     text = status.text.encode('UTF-8')
-    output =  BRIGHT + BLUE + name + END + ' ' + text
-    print '\n'.join(textwrap.wrap(output,WIDTH)) + '\n' + BLUE + created + END
+    id = str(status.id)
+    print '\n'.join(textwrap.wrap("%s %s (%s) [#%s]" % (BRIGHT+BLUE+name+END,text,BLUE+created+END,GREEN+id+END),WIDTH))
     debug(status.id)
 
 def print_statuses(statuses):
@@ -92,22 +111,30 @@ def print_user(user):
     """Pretty-print a twitter.User object.
 
     """
-    print "%s (%s)" % (user.GetScreenName().encode('UTF-8'),user.GetName().encode('UTF-8'))
-    location = user.GetLocation()
-    if location:
-        print "Location: %s" % location.encode('UTF-8')
-    description = user.GetDescription()
-    if description:
-        print "Description: %s" % description.encode('UTF-8')
-    url = user.GetUrl()
-    if url:
-        print "Print URL: %s" % url.encode('UTF-8')
-    print "%s friends, %s followers" % (user.GetFriendsCount(), user.GetFollowersCount())
-    status = user.GetStatus()
-    if status:
-        print "%s statuses, latest: %s" % (user.GetStatusesCount(), status.text.encode('UTF-8'))
+    screen_name = user.GetScreenName().encode('UTF-8')
+    long_name = user.GetName().encode('UTF-8')
+    statuses = str(user.GetStatusesCount())
+    followers = str(user.GetFollowersCount())
+    following = str(user.GetFriendsCount())
+    if LONG:
+        print "%s (%s)" % (BRIGHT+BLUE+screen_name+END,long_name)
+        location = user.GetLocation()
+        if location:
+            print "Location: %s" % YELLOW+location.encode('UTF-8')+END
+        description = user.GetDescription()
+        if description:
+            print "Description: %s" % YELLOW+description.encode('UTF-8')+END
+        url = user.GetUrl()
+        if url:
+            print "Print URL: %s" % BLUE+url.encode('UTF-8')+END
+        print "following %s, %s followers" % (GREEN+following+END,GREEN+followers+END)
+        status = user.GetStatus()
+        if status:
+            print "%s statuses, latest: %s" % (statuses,YELLOW+status.text.encode('UTF-8')+END)
+        else:
+            print "%s statuses" % statuses
     else:
-        print "%s statuses" % user.GetStatusesCount()
+        print "%s (%s) [%s %s %s]" % (BRIGHT+BLUE+screen_name+END,long_name,GREEN+statuses,followers,following+END)
 
 def print_users(users):
     """Pretty-print a sequence of twitter.User objects.
@@ -115,7 +142,7 @@ def print_users(users):
     """
     for (index,user) in enumerate(users):
         print_user(user)
-        if index < len(users)-1: print
+        if LONG and index < len(users)-1: print
 
 def authenticate():
     """Authenticate with the microblogging service API. Ask the user for her
@@ -469,7 +496,7 @@ lsfeatured),
 lsusers))
 
 def main():
-    global UNSEEN, USERNAME, PASSWORD, APIROOT, ENCODING, API, SHELF
+    global UNSEEN, LONG, USERNAME, PASSWORD, APIROOT, ENCODING, API, SHELF
 
     # Parse the command-line options and arguments.
     usage = """Usage: %prog [options] command [args]
@@ -502,13 +529,14 @@ a ~/.microblogrc file:
 """
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('-u','--unseen',action='store_true',help="remember which messages have been printed and only print messages that you haven't seen before")
+    parser.add_option('-l','--long',action='store_true',help="long form output")
     parser.add_option('-U','--username',action='store',help="specify an alternate username (overrides any username in the config file)")
     parser.add_option('-p','--password',action='store',help="specify an alternate password (overrides any password in the config file)")
     parser.add_option('-a','--apiroot',action='store',help="specify an alternate API root (overrides any apiroot in the config file)")
     parser.add_option('-e','--encoding',action='store',help="specify the character set encoding used in input strings, e.g. utf-8 (overrides any encoding in the config file)")
     parser.add_option('-c','--config',action='store',help="specify an alternate config file")
     parser.add_option('-d','--debug',action='store_true',help='enable verbose output for debugging')
-    parser.set_defaults(unseen=False, username=None, password=None, apiroot=None, encoding=None, config='~/.microblogrc', debug=False)
+    parser.set_defaults(unseen=False, long=False, username=None, password=None, apiroot=None, encoding=None, config='~/.microblogrc', debug=False)
     (options,args) = parser.parse_args()
 
     if not args:
@@ -517,6 +545,7 @@ a ~/.microblogrc file:
         sys.exit(2)
 
     UNSEEN = options.unseen
+    LONG = options.long
 
     # Parse the config file.
     config = ConfigParser.SafeConfigParser()
