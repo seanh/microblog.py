@@ -1,16 +1,30 @@
 #!/usr/bin/env python2.6
-"""
+"""microblog.py A command-line microblogging client for
+identica/twitter/statusnet, see microblog.py --help for usage.
 
-TODO:
-
-Implement these options:
---no-colour
---no-bold
---no-wrap
-
-Finish implementing the commands that currently raise NotImplementedError.
-
-Add more error handling.
+FIXME: lastid values should depend on the args, not just the
+       function.
+FIXME: As many comands as possible should accept multiple arguments
+       and process them one-by-one, e.g. fav and unfav.
+FIXME: Functions should raise exceptions rather than calling
+       sys.exit.
+TODO: Add --no-colour option.
+TODO: Add --no-bold option.
+TODO: Add --no-wrap option.
+TODO: Implement direct messaging commands:
+      microblog.py msg user message
+      microblog.py lsmsgs
+TODO: Implement show <id> command to show specific message(s) by id.
+TODO: Short-format printing of messages and users should be
+      tab-separated values with empty lines separating rows.
+TODO: Long-format printing of messages and users should be JSON.
+TODO: Make short-format and long-format help messages. Add fun
+      examples to the long help.
+TODO: Make it installable with distutils.
+TODO: Finish implementing the commands that currently raise NotImplementedError.
+TODO: Add more error handling, e.g. of HTTPErrors raised by python_twitter.
+TODO: Add an interactive mode, probably using curses
+      microblog.py --interactive
 
 """
 from python_twitter import twitter
