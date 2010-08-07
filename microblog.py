@@ -460,11 +460,8 @@ def search(args):
         if UNSEEN:
             _save_lastid(lastid,term)
 
+# FIXME: This always seems to get 401 Unauthorized.
 def lsfeatured(args):
-    # GetFeatured seems to always raise an HTTP Error 404,
-    # maybe the status.net API doesn't support it?
-    # Disable this command for now.
-    raise NotImplementedError()
     if args: raise TypeError("lsfeatured doesn't take any arguments.")
     authenticate()
     featured = API.GetFeatured()
