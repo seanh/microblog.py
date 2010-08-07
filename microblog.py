@@ -2,22 +2,6 @@
 """microblog.py A command-line microblogging client for
 identica/twitter/statusnet, see microblog.py --help for usage.
 
-TODO: Add --no-colour option. (To implement this, if NOCOLOUR is True then just set all the
-      colour escape codes (BLACK, RED, GREEN, etc.) to empty strings.
-TODO: Add --no-bold option. (Same implementation as --no-colour.)
-TODO: Add --no-wrap option.
-TODO: Implement show <id> command to show specific message(s) by id.
-TODO: Short-format printing of messages and users should be
-      tab-separated values with empty lines separating rows.
-TODO: Long-format printing of messages and users should be JSON.
-TODO: Make short-format and long-format help messages. Add fun
-      examples to the long help.
-TODO: Make it installable with distutils.
-TODO: Finish implementing the commands that currently raise NotImplementedError.
-TODO: Add more error handling, e.g. of HTTPErrors raised by python_twitter.
-TODO: Add an interactive mode, probably using curses
-      microblog.py --interactive
-
 """
 from python_twitter import twitter
 import os
@@ -642,8 +626,7 @@ a ~/.microblogrc file:
 
     if not args:
         # There has to be at least one argument, the command.
-        parser.print_help()
-        sys.exit(2)
+        args = ['lscommands']
 
     # Parse the config file.
     config = ConfigParser.SafeConfigParser()
@@ -735,8 +718,10 @@ a ~/.microblogrc file:
     else:
         (command,help,func) = matching_commands[0]
         if command == 'lscommands':
+            print "You must supply a command name as argument. The available commands are:"
             for (command,help,func) in COMMANDS:
                 print command
+            print "See --help for detailed instrucitons."
         else:
             SHELF = shelve.open(os.path.abspath(os.path.expanduser('~/.microblog.shelf')), writeback=True)
             try:
