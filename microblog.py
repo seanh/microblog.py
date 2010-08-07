@@ -4,12 +4,10 @@ identica/twitter/statusnet, see microblog.py --help for usage.
 
 FIXME: As many comands as possible should accept multiple arguments
        and process them one-by-one, e.g. fav and unfav.
-TODO: Add --no-colour option.
-TODO: Add --no-bold option.
+TODO: Add --no-colour option. (To implement this, if NOCOLOUR is True then just set all the
+      colour escape codes (BLACK, RED, GREEN, etc.) to empty strings.
+TODO: Add --no-bold option. (Same implementation as --no-colour.)
 TODO: Add --no-wrap option.
-TODO: Implement direct messaging commands:
-      microblog.py msg user message
-      microblog.py lsmsgs
 TODO: Implement show <id> command to show specific message(s) by id.
 TODO: Short-format printing of messages and users should be
       tab-separated values with empty lines separating rows.
@@ -113,6 +111,47 @@ def print_statuses(statuses):
     for (index,status) in enumerate(reversed(statuses)):
         print_status(status)
         if index < len(statuses)-1: print
+
+def print_statuses(statuses):
+    """Pretty-print a sequence of twitter.Status objects.
+
+    """
+    for (index,status) in enumerate(reversed(statuses)):
+        print_status(status)
+        if index < len(statuses)-1: print
+
+
+def print_message(message):
+    """Pretty-print a twitter.DirectMessage object.
+
+    """
+    id = str(message.id)
+    created = message.created_at
+    sender_id = str(message.sender_id)
+    sender_name = message.sender_screen_name
+    recipient_id = str(message.recipient_id)
+    recipient_name = message.recipient_screen_name
+    text = message.text
+    if LONG:
+        print "From: %s" % BRIGHT+BLUE+sender_name+END
+        print "To: %s" % BRIGHT+BLUE+recipient_name+END
+        print "Date: %s" % BLUE+created+END
+        print "Sender ID: %s" % GREEN+sender_id+END
+        print "Recipient ID: %s" % GREEN+recipient_id+END
+        print "Message ID: %s" % GREEN+id+END
+        print
+        print text
+    else:
+        print '\n'.join(textwrap.wrap("%s %s (%s) [#%s]" % (BRIGHT+BLUE+sender_name+END,text,BLUE+created+END,GREEN+id+END),WIDTH))
+    debug(id)
+
+def print_messages(messages):
+    """Pretty-print a sequence of twitter.DirectMessage objects.
+
+    """
+    for (index,message) in enumerate(reversed(messages)):
+        print_message(message)
+        if index < len(messages)<1: print
 
 def print_user(user):
     """Pretty-print a twitter.User object.
@@ -280,6 +319,42 @@ def send(args):
         raise
     print "%s just posted: %s" % (status.user.name, status.text)
 
+# TODO: Send the same message to many users, by passing multiple
+# args to msg?
+def msg(args):
+    authenticate()
+    try:
+        recipient = args[0]
+    except IndexError:
+        recipient = None
+    message = ' '.join(args[1:])
+    if not recipient:
+        recipient = raw_input("To: ").strip()
+    if not message:
+        message = raw_input("Message: ").strip()
+    try:
+        message = API.PostDirectMessage(recipient,message)
+    except urllib2.HTTPError, e:
+        print "%s. Have you verified the email address for your account? Are you allowed to send direct messages to this recipient?" % e
+        raise
+    except UnicodeDecodeError:
+        print "Your message could not be encoded. Perhaps it contains non-ASCII characters?\nTry explicitly specifying the encoding with the --encoding flag"
+        raise
+    print "%s@%s just sent the following message to %s@%s: %s" % (USERNAME,APIROOT,message.recipient_screen_name,APIROOT,message.text)
+
+def lsmsgs(args):
+    if args: raise TypeError("lsmsgs doesn't take any arguments.")
+    authenticate()
+    last_id = _read_lastid(None)
+    messages = API.GetDirectMessages(since_id=last_id)
+    if not messages:
+        return
+    else:
+        print_messages(messages)
+        lastid = str(messages[0].id)
+        if UNSEEN:
+            _save_lastid(lastid,None)
+
 def lsgroup(args):
     raise NotImplementedError()
 
@@ -445,6 +520,16 @@ lsreplies),
 your message, or you can give it in the command:
 send "Hello world!" """,
 send),
+
+('msg [username] [message]',
+"""Send a direct message. If you don't give them in the command
+you'll be asked to type out the recipient and the message.""",
+msg),
+
+('lsmsgs',
+"""List your private messages. Equivalent to your identica Inbox
+page.""",
+lsmsgs),
 
 ('lsgroup <groupname>',
 """List recent posts to a group.""",
