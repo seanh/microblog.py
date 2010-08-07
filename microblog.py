@@ -721,7 +721,7 @@ a ~/.microblogrc file:
             print "You must supply a command name as argument. The available commands are:"
             for (command,help,func) in COMMANDS:
                 print command
-            print "See --help for detailed instrucitons."
+            print "See --help for detailed instructions."
         else:
             SHELF = shelve.open(os.path.abspath(os.path.expanduser('~/.microblog.shelf')), writeback=True)
             try:
