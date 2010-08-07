@@ -171,29 +171,46 @@ def authenticate():
     API.SetCredentials(USERNAME,PASSWORD)
     debug('set credentials for %s@%s' % (USERNAME,APIROOT))
 
-def _save_lastid(lastid):
+def _read_lastid(args):
+    """This is a helper function called by the various ls* functions, it exists
+    to avoid code repetition.
+
+    """
+    if UNSEEN:
+        caller = whocalledme()
+        try:
+            debug("Reading lastid ['%s']['%s']['%s']['%s']['lastid']." % (APIROOT,USERNAME,caller,str(args)))
+            lastid = SHELF[APIROOT][USERNAME][caller][str(args)]['lastid']
+        except KeyError:
+            lastid = None
+        debug("lastid: %s" % lastid)
+    else:
+        # If UNSEEN is False then reading lastid's is disabled.
+        lastid = None
+    return lastid
+
+def _save_lastid(lastid,args):
     """This is a helper function called by the various ls* functions, it exists
     to avoid code repetition.
 
     """
     caller = whocalledme()
-    debug("Saving lastid ['%s']['%s']['%s']." % (APIROOT,caller,lastid))
+    args = str(args)
+    debug("Saving lastid ['%s']['%s']['%s']['%s']['%s']." % (APIROOT,USERNAME,caller,str(args),lastid))
     if not SHELF.has_key(APIROOT): SHELF[APIROOT] = {}
     if not SHELF[APIROOT].has_key(USERNAME): SHELF[APIROOT][USERNAME] = {}
     if not SHELF[APIROOT][USERNAME].has_key(caller): SHELF[APIROOT][USERNAME][caller] = {}
-    SHELF[APIROOT][USERNAME][caller]['lastid'] = lastid
+    if not SHELF[APIROOT][USERNAME][caller].has_key(args): SHELF[APIROOT][USERNAME][caller][args] = {}
+    SHELF[APIROOT][USERNAME][caller][args]['lastid'] = lastid
 
 def lspublic(args):
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(args)
     if args:
-        statuses = API.FilterPublicTimeline(' '.join(args),since_id=lastid)
+        term = ' '.join(args)
+        debug("Filtering public timeline: %s" % term)
+        statuses = API.FilterPublicTimeline(term,since_id=lastid)
     else:
+        debug("Getting public timeline unfiltered.")
         statuses = API.GetPublicTimeline(since_id=lastid)
     if not statuses:
         return
@@ -201,7 +218,7 @@ def lspublic(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,args)
 
 def lspersonal(args):
     if len(args) > 1: sys.exit("lspersonal takes at most one argument.")
@@ -210,13 +227,7 @@ def lspersonal(args):
     else:
         user = None
         authenticate()
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(user)
     statuses = API.GetFriendsTimeline(user=user,since_id=lastid)
     if not statuses:
         return
@@ -224,7 +235,7 @@ def lspersonal(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,user)
 
 def lsprofile(args):
     if len(args) > 1: sys.exit("lsprofile takes at most one argument.")
@@ -233,13 +244,7 @@ def lsprofile(args):
     else:
         user = None
         authenticate()
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(user)
     statuses = API.GetUserTimeline(id=user,since_id=lastid)
     if not statuses:
         return
@@ -247,18 +252,12 @@ def lsprofile(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,user)
 
 def lsreplies(args):
     if args: sys.exit("lsreplies doesn't take any arguments.")
     authenticate()
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(None)
     statuses = API.GetReplies(since_id=lastid)
     if not statuses:
         return
@@ -266,7 +265,7 @@ def lsreplies(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,None)
 
 def send(args):
     if len(args) > 1: sys.exit("send takes at most one argument.")
@@ -364,13 +363,7 @@ def lsfavs(args):
 def lsmentions(args):
     if args: sys.exit("lsmentions doesn't take any arguments.")
     authenticate()
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(None)
     statuses = API.GetMentions(since_id=lastid)
     if not statuses:
         return
@@ -378,19 +371,13 @@ def lsmentions(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,None)
 
 def search(args):
     if not args: sys.exit("Search requires an argument: the search term.")
     term = ' '.join(args)
     debug("Searching for %s" % term)
-    lastid = None
-    if UNSEEN:
-        try:
-            lastid = SHELF[APIROOT][USERNAME][whoami()]['lastid']
-        except KeyError:
-            pass
-    debug('lastid = %s' % lastid)
+    lastid = _read_lastid(term)
     statuses = API.GetSearch(term,since_id=lastid)
     if not statuses:
         return
@@ -398,7 +385,7 @@ def search(args):
         print_statuses(statuses)
         lastid = str(statuses[0].id)
         if UNSEEN:
-            _save_lastid(lastid)
+            _save_lastid(lastid,term)
 
 def lsfeatured(args):
     # GetFeatured seems to always raise an HTTP Error 404,
