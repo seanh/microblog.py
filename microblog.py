@@ -4,8 +4,6 @@ identica/twitter/statusnet, see microblog.py --help for usage.
 
 FIXME: As many comands as possible should accept multiple arguments
        and process them one-by-one, e.g. fav and unfav.
-FIXME: Functions should raise exceptions rather than calling
-       sys.exit.
 TODO: Add --no-colour option.
 TODO: Add --no-bold option.
 TODO: Add --no-wrap option.
@@ -219,7 +217,7 @@ def lspublic(args):
             _save_lastid(lastid,args)
 
 def lspersonal(args):
-    if len(args) > 1: sys.exit("lspersonal takes at most one argument.")
+    if len(args) > 1: raise TypeError("lspersonal takes at most one argument.")
     if args:
         user = args[0]
     else:
@@ -236,7 +234,7 @@ def lspersonal(args):
             _save_lastid(lastid,user)
 
 def lsprofile(args):
-    if len(args) > 1: sys.exit("lsprofile takes at most one argument.")
+    if len(args) > 1: raise TypeError("lsprofile takes at most one argument.")
     if args:
         user = args[0]
     else:
@@ -253,7 +251,7 @@ def lsprofile(args):
             _save_lastid(lastid,user)
 
 def lsreplies(args):
-    if args: sys.exit("lsreplies doesn't take any arguments.")
+    if args: raise TypeError("lsreplies doesn't take any arguments.")
     authenticate()
     lastid = _read_lastid(None)
     statuses = API.GetReplies(since_id=lastid)
@@ -266,7 +264,7 @@ def lsreplies(args):
             _save_lastid(lastid,None)
 
 def send(args):
-    if len(args) > 1: sys.exit("send takes at most one argument.")
+    if len(args) > 1: raise TypeError("send takes at most one argument.")
     authenticate()
     if not args:
         message = raw_input("What's up, %s? > " % USERNAME).strip()
@@ -275,9 +273,11 @@ def send(args):
     try:
         status = API.PostUpdate(message)
     except urllib2.HTTPError, e:
-        sys.exit("HTTPError, have you verified the email address for your account?\n%s" % str(e))
+        print "HTTPError: have you verified the email address for your account?"
+        raise
     except UnicodeDecodeError:
-        sys.exit("Your message could not be encoded. Perhaps it contains non-ASCII characters?\nTry explicitly specifying the encoding with the --encoding flag")
+        print "Your message could not be encoded. Perhaps it contains non-ASCII characters?\nTry explicitly specifying the encoding with the --encoding flag"
+        raise
     print "%s just posted: %s" % (status.user.name, status.text)
 
 def lsgroup(args):
@@ -293,13 +293,13 @@ def leave(args):
     raise NotImplementedError()
 
 def lsfollowers(args):
-    if args: sys.exit("lsfollowers doesn't take any arguments.")
+    if args: raise TypeError("lsfollowers doesn't take any arguments.")
     authenticate()
     followers = API.GetFollowers()
     print_users(followers)
 
 def lsfollowing(args):
-    if len(args) > 1: sys.exit("lsfollowing takes at most one argument.")
+    if len(args) > 1: raise TypeError("lsfollowing takes at most one argument.")
     if args:
         user = args[0]
     else:
@@ -309,8 +309,8 @@ def lsfollowing(args):
     print_users(following)
 
 def follow(args):
-    if not args: sys.exit("follow requires an argument: the ID or screen name of the user that you want to follow.")
-    if len(args) > 1: sys.exit("follow takes at most one argument.")
+    if not args: raise TypeError("follow requires an argument: the ID or screen name of the user that you want to follow.")
+    if len(args) > 1: raise TypeError("follow takes at most one argument.")
     user = args[0]
     authenticate()
     try:
@@ -322,8 +322,8 @@ def follow(args):
     print_user(following)
 
 def unfollow(args):
-    if not args: sys.exit("unfollow requires an argument: the ID or screen name of the user that you want to unfollow.")
-    if len(args) > 1: sys.exit("unfollow takes at most one argument.")
+    if not args: raise TypeError("unfollow requires an argument: the ID or screen name of the user that you want to unfollow.")
+    if len(args) > 1: raise TypeError("unfollow takes at most one argument.")
     user = args[0]
     authenticate()
     try:
@@ -335,8 +335,8 @@ def unfollow(args):
     print_user(following)
 
 def fav(args):
-    if not args: sys.exit("fav requires an argument: the #ID of the message to favorite.")
-    if len(args) > 1: sys.exit("fav takes at most one argument.")
+    if not args: raise TypeError("fav requires an argument: the #ID of the message to favorite.")
+    if len(args) > 1: raise TypeError("fav takes at most one argument.")
     authenticate()
     id = args[0].strip()
     if id.startswith('#'): id = id[1:]
@@ -349,7 +349,7 @@ def unfav(args):
     raise NotImplementedError()
 
 def lsfavs(args):
-    if len(args) > 1: sys.exit("lsfavs takes at most one argument.")
+    if len(args) > 1: raise TypeError("lsfavs takes at most one argument.")
     if args:
         user = args[0]
     else:
@@ -359,7 +359,7 @@ def lsfavs(args):
     print_statuses(statuses)
 
 def lsmentions(args):
-    if args: sys.exit("lsmentions doesn't take any arguments.")
+    if args: raise TypeError("lsmentions doesn't take any arguments.")
     authenticate()
     lastid = _read_lastid(None)
     statuses = API.GetMentions(since_id=lastid)
@@ -372,7 +372,7 @@ def lsmentions(args):
             _save_lastid(lastid,None)
 
 def search(args):
-    if not args: sys.exit("Search requires an argument: the search term.")
+    if not args: raise TypeError("Search requires an argument: the search term.")
     term = ' '.join(args)
     debug("Searching for %s" % term)
     lastid = _read_lastid(term)
@@ -390,13 +390,13 @@ def lsfeatured(args):
     # maybe the status.net API doesn't support it?
     # Disable this command for now.
     raise NotImplementedError()
-    if args: sys.exit("lsfeatured doesn't take any arguments.")
+    if args: raise TypeError("lsfeatured doesn't take any arguments.")
     authenticate()
     featured = API.GetFeatured()
     print_users(featured)
 
 def lsusers(args):
-    if not args: sys.exit("lsusers requires an argument: the usernames of the users to list.")
+    if not args: raise TypeError("lsusers requires an argument: the usernames of the users to list.")
     users = []
     for user in args:
         try:
@@ -660,6 +660,8 @@ a ~/.microblogrc file:
                 func(args[1:])
             except NotImplementedError:
                 print "%s is not implemented yet :(" % command
+            except TypeError, e:
+                sys.exit(e)
             except urllib2.HTTPError, e:
                 print e
             finally:
