@@ -103,6 +103,10 @@ that could be added:
    (`\n\n`) indicates a new row. Will have to replace any tab characters in values
    with four spaces.
 *  Long-format printing of messages and users should be JSON.
+*  microblog.py should be able to parse its own output as input
+so that you can, for example, copy messages from a twitter
+account to an identica accout by piping the stdout of one
+microblog.py command to the stdin of another.
 *  Make it installable with distutils.
 *  Finish implementing the commands that currently raise
    `NotImplementedError`.
