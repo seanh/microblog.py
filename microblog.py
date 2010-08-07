@@ -2,8 +2,6 @@
 """microblog.py A command-line microblogging client for
 identica/twitter/statusnet, see microblog.py --help for usage.
 
-FIXME: As many comands as possible should accept multiple arguments
-       and process them one-by-one, e.g. fav and unfav.
 TODO: Add --no-colour option. (To implement this, if NOCOLOUR is True then just set all the
       colour escape codes (BLACK, RED, GREEN, etc.) to empty strings.
 TODO: Add --no-bold option. (Same implementation as --no-colour.)
@@ -200,7 +198,7 @@ def authenticate():
         # It looks like we've already authenticated.
         return
     if not USERNAME:
-        USERNAME = raw_input("Username for %s> " % APIROOT)
+        USERNAME = raw_input("Username for %s> " % APIROOT).strip()
     if not PASSWORD:
         PASSWORD = getpass.getpass("Password for %s@%s> " % (USERNAME,APIROOT))
     API.SetCredentials(USERNAME,PASSWORD)
@@ -303,12 +301,11 @@ def lsreplies(args):
             _save_lastid(lastid,None)
 
 def send(args):
-    if len(args) > 1: raise TypeError("send takes at most one argument.")
     authenticate()
     if not args:
         message = raw_input("What's up, %s? > " % USERNAME).strip()
     else:
-        message = args[0].strip()
+        message = ' '.join(args).strip()
     try:
         status = API.PostUpdate(message)
     except urllib2.HTTPError, e:
@@ -384,40 +381,41 @@ def lsfollowing(args):
     print_users(following)
 
 def follow(args):
-    if not args: raise TypeError("follow requires an argument: the ID or screen name of the user that you want to follow.")
-    if len(args) > 1: raise TypeError("follow takes at most one argument.")
-    user = args[0]
+    if not args:
+        args = raw_input("User(s) to follow: ").strip().split()
     authenticate()
-    try:
-        following = API.CreateFriendship(user=user)
-    except urllib2.HTTPError, e:
-        print "%s. Did you mistype the username?" % e
-        return
-    print "%s@%s is now following:" % (USERNAME,APIROOT)
-    print_user(following)
+    for user in args:
+        try:
+            following = API.CreateFriendship(user=user)
+        except urllib2.HTTPError, e:
+            print "%s. Did you mistype the username? Usernames should be a space-separated list, no commas" % e
+            return
+        print "%s@%s is now following:" % (USERNAME,APIROOT)
+        print_user(following)
 
 def unfollow(args):
-    if not args: raise TypeError("unfollow requires an argument: the ID or screen name of the user that you want to unfollow.")
-    if len(args) > 1: raise TypeError("unfollow takes at most one argument.")
-    user = args[0]
+    if not args:
+        args = raw_input("User(s) to unfollow: ").strip().split()
     authenticate()
-    try:
-        following = API.DestroyFriendship(user=user)
-    except urllib2.HTTPError, e:
-        print "%s. Did you mistype the username?" % e
-        return
-    print "%s@%s is no longer following:" % (USERNAME,APIROOT)
-    print_user(following)
+    for user in args:
+        try:
+            following = API.DestroyFriendship(user=user)
+        except urllib2.HTTPError, e:
+            print "%s. Did you mistype the username? Usernames should be a space-separated list, no commas" % e
+            return
+        print "%s@%s is no longer following:" % (USERNAME,APIROOT)
+        print_user(following)
 
 def fav(args):
-    if not args: raise TypeError("fav requires an argument: the #ID of the message to favorite.")
-    if len(args) > 1: raise TypeError("fav takes at most one argument.")
+    if not args:
+        args = raw_input("ID(s) of the message(s) to fav: ").strip().split()
     authenticate()
-    id = args[0].strip()
-    if id.startswith('#'): id = id[1:]
-    status = API.GetStatus(id)
-    favorite = API.CreateFavorite(status)
-    print "%s@%s just favorited message %s: %s" % (USERNAME,APIROOT,favorite.id,favorite.text.encode("UTF-8"))
+    for arg in args:
+        id = arg.strip()
+        if id.startswith('#'): id = id[1:]
+        status = API.GetStatus(id)
+        favorite = API.CreateFavorite(status)
+        print "%s@%s just favorited message %s: %s" % (USERNAME,APIROOT,favorite.id,favorite.text.encode("UTF-8"))
 
 def unfav(args):
     print "The status.net API doesn't support favorites/destroy yet :("
@@ -447,8 +445,10 @@ def lsmentions(args):
             _save_lastid(lastid,None)
 
 def search(args):
-    if not args: raise TypeError("Search requires an argument: the search term.")
-    term = ' '.join(args)
+    if args:
+        term = ' '.join(args)
+    else:
+        term = raw_input("Search term: ").strip()
     debug("Searching for %s" % term)
     lastid = _read_lastid(term)
     statuses = API.GetSearch(term,since_id=lastid)
@@ -468,7 +468,8 @@ def lsfeatured(args):
     print_users(featured)
 
 def lsusers(args):
-    if not args: raise TypeError("lsusers requires an argument: the usernames of the users to list.")
+    if not args:
+        args = raw_input("User(s) to list: ").strip().split()
     users = []
     for user in args:
         try:
