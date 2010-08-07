@@ -2,8 +2,6 @@
 """microblog.py A command-line microblogging client for
 identica/twitter/statusnet, see microblog.py --help for usage.
 
-FIXME: lastid values should depend on the args, not just the
-       function.
 FIXME: As many comands as possible should accept multiple arguments
        and process them one-by-one, e.g. fav and unfav.
 FIXME: Functions should raise exceptions rather than calling
