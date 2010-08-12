@@ -118,7 +118,7 @@ def print_message(message):
         print "From: %s" % BRIGHT+BLUE+sender_name+END
         print "To: %s" % BRIGHT+BLUE+recipient_name+END
         print "Date: %s" % BLUE+created+END
-        #print "Sender ID: %s" % GREEN+sender_id+END
+        print "Sender ID: %s" % GREEN+sender_id+END
         print "Recipient ID: %s" % GREEN+recipient_id+END
         print "Message ID: %s" % GREEN+id+END
         print
