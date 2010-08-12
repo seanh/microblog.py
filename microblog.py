@@ -118,7 +118,7 @@ def print_message(message):
         print "From: %s" % BRIGHT+BLUE+sender_name+END
         print "To: %s" % BRIGHT+BLUE+recipient_name+END
         print "Date: %s" % BLUE+created+END
-        print "Sender ID: %s" % GREEN+sender_id+END
+        #print "Sender ID: %s" % GREEN+sender_id+END
         print "Recipient ID: %s" % GREEN+recipient_id+END
         print "Message ID: %s" % GREEN+id+END
         print
@@ -299,6 +299,17 @@ def send(args):
         print "Your message could not be encoded. Perhaps it contains non-ASCII characters?\nTry explicitly specifying the encoding with the --encoding flag"
         raise
     print "%s just posted: %s" % (status.user.name, status.text)
+
+def rmmsg(args):
+    authenticate()
+    if not args:
+        args = raw_input("ID(s) of messages to delete: ").strip().split()
+    for id in args:
+        if id.startswith('#'):
+            id = id[1:]
+        deleted = API.DestroyStatus(id)
+        print "Deleted:"
+        print_status(deleted)
 
 # TODO: Send the same message to many users, by passing multiple
 # args to msg?
@@ -512,6 +523,10 @@ msg),
 """List your private messages. Equivalent to your identica Inbox
 page.""",
 lsmsgs),
+
+('rm <id>',
+"""Delete a message.""",
+rmmsg),
 
 ('lsgroup <groupname>',
 """List recent posts to a group.""",
